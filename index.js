@@ -9,20 +9,22 @@ app.use(express.json());
 
 // Connect to Railway MySQL
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT),
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  port: process.env.MYSQLPORT,
+  database: process.env.MYSQLDATABASE,
 });
 
+
 db.connect(err => {
-  if (err) {
-    console.error("Database connection error:", err);
-  } else {
-    console.log("Connected to Railway MySQL database!");
-  }
+    if (err) {
+        console.error("Database connection failed:", err);
+        return;
+    }
+    console.log("Connected to Railway MySQL!");
 });
+
 
 // ===== CRUD ROUTES =====
 
@@ -74,5 +76,5 @@ app.delete("/todos/:id", (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
