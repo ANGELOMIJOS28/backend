@@ -1,29 +1,38 @@
-require("dotenv").config();
-const express = require("express");
-const mysql = require("mysql2");
-const cors = require("cors");
+const express = require('express');
+const mysql = require('mysql2');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// Connect to Railway MySQL
+// RAILWAY MYSQL CONNECTION
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  port: process.env.MYSQLPORT,
-  database: process.env.MYSQLDATABASE,
+    host: "shinkansen.proxy.rlwy.net",
+    user: "root",
+    password: "gsPCpwSsuhbbrrmubThRQxXjHSHmAVLz",
+    port: 39375,
+    database: "railway"
 });
-
 
 db.connect(err => {
     if (err) {
-        console.error("Database connection failed:", err);
+        console.error("❌ Database connection failed:", err);
         return;
     }
-    console.log("Connected to Railway MySQL!");
+    console.log("✅ Connected to Railway MySQL!");
 });
+
+// EXAMPLE ROUTE
+app.get("/", (req, res) => {
+    res.send("Server Running!");
+});
+
+app.listen(10000, () => {
+    console.log("Server running on port 10000");
+});
+
 
 
 // ===== CRUD ROUTES =====
@@ -75,6 +84,6 @@ app.delete("/todos/:id", (req, res) => {
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// // Start server
+// const PORT = process.env.PORT || 10000;
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
