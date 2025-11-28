@@ -1,79 +1,68 @@
 require("dotenv").config();
 const express = require("express");
-const mysql = require("mysql2");
 const cors = require("cors");
+const { Sequelize, DataTypes } = require("sequelize");
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "*", credentials: true }));
 app.use(express.json());
 
-// Connect to Railway MySQL
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,   // FIXED ✔
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT),
-});
-
-db.connect(err => {
-  if (err) {
-    console.error("Database connection error:", err);
-  } else {
-    console.log("Connected to Railway MySQL database!");
+// -------------------
+//  SEQUELIZE CONNECT
+// -------------------
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+    logging: false
   }
+);
+
+// -------------------
+//  TODO MODEL
+// -------------------
+const Todo = sequelize.define("Todo", {
+  title: { type: DataTypes.STRING, allowNull: false },
+  task: { type: DataTypes.TEXT, allowNull: false },
+  status: { type: DataTypes.STRING, defaultValue: "pending" }
 });
 
-
-// ===== CRUD ROUTES =====
-
-// GET all todos
-app.get("/todos", (req, res) => {
-  db.query("SELECT * FROM todos", (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
-  });
+// Sync auto-creates table if missing
+sequelize.sync().then(() => {
+  console.log("Database synced! (Tables created automatically)");
 });
 
-// ADD todo
-app.post("/todos", (req, res) => {
-  const { title, task } = req.body;
-  const status = "pending";
-
-  db.query(
-    "INSERT INTO todos (title, task, status) VALUES (?, ?, ?)",
-    [title, task, status],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: result.insertId, title, task, status });
-    }
-  );
+// -------------------
+//  CRUD ROUTES
+// -------------------
+app.get("/todos", async (req, res) => {
+  const todos = await Todo.findAll();
+  res.json(todos);
 });
 
-// UPDATE todo
-app.put("/todos/:id", (req, res) => {
+app.post("/todos", async (req, res) => {
+  const todo = await Todo.create(req.body);
+  res.json(todo);
+});
+
+app.put("/todos/:id", async (req, res) => {
   const { id } = req.params;
-  const { title, task, status } = req.body;
-
-  db.query(
-    "UPDATE todos SET title=?, task=?, status=? WHERE id=?",
-    [title, task, status || "pending", id],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: "Todo updated successfully" });
-    }
-  );
+  await Todo.update(req.body, { where: { id } });
+  res.json({ message: "Updated successfully" });
 });
 
-// DELETE todo
-app.delete("/todos/:id", (req, res) => {
+app.delete("/todos/:id", async (req, res) => {
   const { id } = req.params;
-  db.query("DELETE FROM todos WHERE id=?", [id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "Todo deleted successfully" });
-  });
+  await Todo.destroy({ where: { id } });
+  res.json({ message: "Deleted successfully" });
 });
 
-// Start server
+// -------------------
+//  START SERVER
+// -------------------
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
