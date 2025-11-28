@@ -4,10 +4,8 @@ const cors = require("cors");
 const mysql = require("mysql2/promise");
 
 const app = express();
-app.use(cors({ origin: "*", credentials: true }));
+app.use(cors({ origin: "*" }));
 app.use(express.json());
-
-
 
 // -----------------------
 // MYSQL CONNECTION POOL
@@ -17,18 +15,15 @@ let db;
 async function connectDB() {
   try {
     db = await mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT),
-  waitForConnections: true,
-  connectionLimit: 10,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
+      port: Number(process.env.DB_PORT),
+      waitForConnections: true,
+      connectionLimit: 10,
+      ssl: { rejectUnauthorized: false }
+    });
 
     console.log("Connected to Railway MySQL!");
   } catch (error) {
@@ -73,7 +68,7 @@ app.post("/todos", async (req, res) => {
   }
 });
 
-// UPDATE
+// UPDATE TODO
 app.put("/todos/:id", async (req, res) => {
   try {
     const { title, task, status } = req.body;
@@ -90,7 +85,7 @@ app.put("/todos/:id", async (req, res) => {
   }
 });
 
-// DELETE
+// DELETE TODO
 app.delete("/todos/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -103,8 +98,8 @@ app.delete("/todos/:id", async (req, res) => {
 });
 
 // -----------------------
-// SERVER (Railway sets PORT automatically)
+// SERVER
 // -----------------------
-app.listen(process.env.PORT, () =>
-  console.log(`Server running on ${process.env.PORT}`)
+app.listen(process.env.PORT || 4000, () =>
+  console.log(`Server running on port ${process.env.PORT}`)
 );
