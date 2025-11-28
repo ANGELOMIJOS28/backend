@@ -25,7 +25,7 @@ const sequelize = new Sequelize(
 // -------------------
 //  TODO MODEL
 // -------------------
-const Todo = sequelize.define("Todo", {
+const Todo = sequelize.define("todo", {
   title: { type: DataTypes.STRING, allowNull: false },
   task: { type: DataTypes.TEXT, allowNull: false },
   status: { type: DataTypes.STRING, defaultValue: "pending" }
