@@ -8,14 +8,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// DATABASE CONNECTION
 const pool = new Pool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 5432
+    port: process.env.DB_PORT,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
+
 
 pool.connect()
     .then(() => console.log("Connected to PostgreSQL"))
